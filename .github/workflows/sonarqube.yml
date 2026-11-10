@@ -3,6 +3,9 @@ name: Análisis SonarQube
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 permissions:
@@ -14,13 +17,10 @@ concurrency:
 
 jobs:
   analysis:
-    if: ${{ vars.SONAR_ENABLED == 'true' }}
-    runs-on: ${{ fromJSON(vars.SONAR_RUNNER_LABELS || '["self-hosted", "Windows", "X64"]') }}
+    runs-on: windows-latest
     timeout-minutes: 30
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
     defaults:
       run:
         shell: pwsh
@@ -28,12 +28,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
       - name: Validar configuración
         run: |
-          foreach ($key in 'SONAR_TOKEN', 'SONAR_HOST_URL', 'SONAR_PROJECT_KEY') {
+          foreach ($key in 'SONAR_TOKEN') {
             if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($key))) {
               throw "Falta configurar $key en GitHub."
             }
@@ -48,7 +52,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Iniciar análisis
         run: |
-          dotnet-sonarscanner begin /k:"$env:SONAR_PROJECT_KEY" /d:sonar.host.url="$env:SONAR_HOST_URL" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.exclusions="**/wwwroot/lib/**" /d:sonar.scanner.scanAll=false
+          dotnet-sonarscanner begin /k:"Edwardscg_LabTrack" /o:"edwardscg" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.exclusions="**/wwwroot/lib/**" /d:sonar.scanner.scanAll=false
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Compilar solución
         run: dotnet build LabTrack.sln --configuration Release --no-restore --no-incremental

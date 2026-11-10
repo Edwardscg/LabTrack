@@ -114,23 +114,9 @@ El catálogo muestra Prestado desde el inicio de una reserva aprobada hasta regi
 
 Solo se devuelven reservas aprobadas cuyo horario ya comenzó. Una devolución solo puede registrarse una vez. Las rechazadas y devueltas dejan de bloquear intervalos. Si la devolución ocurre después del fin, el estudiante queda Penalizado; esta condición no impone multas, bloqueos adicionales ni una duración de sanción. Una devolución puntual posterior no borra una penalización previa.
 
-## SonarQube y GitHub Actions
+## SonarQube Cloud y GitHub Actions
 
-El workflow se activa con cambios en `main` o manualmente. Restaura, inicia SonarScanner for .NET 12.1.0, compila en Release y finaliza el análisis. No despliega ni ejecuta pruebas o genera cobertura. La licencia de Bootstrap se conserva junto con sus archivos distribuidos; estos recursos de terceros se excluyen del análisis.
-
-Configura los siguientes parámetros en GitHub, en `Settings > Secrets and variables > Actions`:
-
-| Tipo | Nombre | Contenido |
-|---|---|---|
-| Secret | `SONAR_TOKEN` | Token con permiso de análisis |
-| Variable | `SONAR_HOST_URL` | URL real del servidor SonarQube |
-| Variable | `SONAR_PROJECT_KEY` | Clave real del proyecto |
-| Variable | `SONAR_RUNNER_LABELS` | Lista JSON de etiquetas del runner |
-| Variable | `SONAR_ENABLED` | `true` cuando servidor, token y runner estén preparados |
-
-Por defecto usa las etiquetas `["self-hosted", "Windows", "X64"]`. Para SonarQube instalado únicamente en este equipo, registra un runner autohospedado de Windows desde `Settings > Actions > Runners`, mantenlo activo y asegúrate de que pueda acceder al servidor. Necesita PowerShell 7, acceso a NuGet y permisos para instalar el SDK y ejecutar el scanner. El scanner administra su JRE cuando el servidor lo permite; si tu versión de SonarQube lo requiere, instala un JDK compatible con ella.
-
-Un runner de GitHub no puede acceder al `localhost` de tu computadora. Si SonarQube es accesible desde Internet, configura `SONAR_RUNNER_LABELS` como `["windows-latest"]`. En ambos casos, usa una URL real y accesible desde el runner. El job permanece omitido hasta establecer `SONAR_ENABLED=true`; la presencia del YAML no significa que el análisis ya se haya ejecutado.
+GitHub compila la solución y analiza el proyecto Edwardscg_LabTrack de la organización edwardscg al actualizar main, abrir o actualizar una solicitud de integración, o ejecutar el workflow manualmente. El runner Windows de GitHub instala .NET 10 y Java 21. Configura el secreto SONAR_TOKEN con un token de SonarQube Cloud con permiso de análisis en Settings > Secrets and variables > Actions.
 
 ## Mantenimiento del repositorio
 
