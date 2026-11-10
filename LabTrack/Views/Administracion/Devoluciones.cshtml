@@ -1,0 +1,20 @@
+@model ListadoReservasViewModel
+@inject LabTrack.Services.LabClock Clock
+@{ ViewData["Title"] = "Devoluciones"; var now = Clock.Now; }
+<div class="page-heading"><div><span class="eyebrow">CONTROL DE PRÉSTAMOS</span><h1>Devoluciones</h1><p>Registra el retorno físico de equipos en uso o pendientes de devolución.</p></div><span class="count-label">@Model.Total por devolver</span></div>
+<form method="get" class="filter-form"><label for="buscar" class="form-label">Buscar préstamo</label><input id="buscar" name="buscar" value="@Model.Buscar" class="form-control" placeholder="Estudiante, código o equipo" maxlength="100" /><button type="submit" class="btn btn-outline-secondary">Buscar</button>@if (!string.IsNullOrEmpty(Model.Buscar)) { <a asp-action="Devoluciones">Limpiar</a> }</form>
+@if (Model.Reservas.Count == 0)
+{
+    <section class="surface empty-state"><h2>No hay préstamos pendientes de devolución</h2><p>Las reservas aprobadas aparecen aquí cuando comienza su horario.</p><a class="btn btn-outline-secondary" asp-action="Index" asp-route-estado="Aprobada">Consultar reservas aprobadas</a></section>
+}
+else
+{
+    <div class="surface table-responsive"><table class="table data-table"><caption class="visually-hidden">Préstamos activos y vencidos</caption><thead><tr><th>Estudiante</th><th>Equipo</th><th>Horario autorizado</th><th>Situación</th><th>Acción</th></tr></thead><tbody>
+    @foreach (var r in Model.Reservas)
+    {
+        var late = now > r.Fin;
+        <tr><td><strong>@r.Estudiante.NombreCompleto</strong><small>@r.Estudiante.CodigoEstudiante</small>@if (r.Estudiante.Penalizado) { <small class="text-danger">Penalizado</small> }</td><td>@r.Equipo.Nombre<small>@r.Equipo.CodigoInventario · #@r.Id</small></td><td>@r.Inicio.ToString("dd MMM yyyy")<small>@r.Inicio.ToString("HH:mm") – @r.Fin.ToString("HH:mm")</small></td><td><span class="status-badge @(late ? "rechazada" : "aprobada")">@(late ? "Fuera de horario" : "En uso")</span></td><td><form method="post" asp-action="Devolver" asp-route-id="@r.Id"><button type="submit" class="btn btn-primary btn-sm">Marcar Devolución</button></form></td></tr>
+    }
+    </tbody></table></div><partial name="_PaginacionReservas" model="Model" />
+}
+<aside class="tip-panel"><strong>Registra la devolución al recibir el equipo</strong><p>La fecha y hora se guardan al confirmar la operación. Si exceden el fin autorizado, el estudiante queda marcado como Penalizado.</p></aside>

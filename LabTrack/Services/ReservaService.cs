@@ -68,6 +68,24 @@ public class ReservaService(LabTrackDbContext db, LabClock clock)
         return new(true, "Solicitud rechazada. El estudiante podrá consultar el motivo.");
     });
 
+    public Task<ResultadoReserva> DevolverAsync(int id) => MutateAsync(async () =>
+    {
+        var reservation = await db.Reservas.Include(r => r.Estudiante).SingleOrDefaultAsync(r => r.Id == id);
+        if (reservation is null || reservation.Estado != EstadoReserva.Aprobada)
+            return new(false, "Solo se puede devolver una reserva aprobada que aún no fue devuelta.");
+        var now = clock.Now;
+        if (reservation.Inicio > now)
+            return new(false, "No se puede devolver un préstamo cuyo horario todavía no comenzó.");
+        reservation.FechaDevolucion = now;
+        reservation.Estado = EstadoReserva.Devuelta;
+        var late = now > reservation.Fin;
+        if (late) reservation.Estudiante.Penalizado = true;
+        await db.SaveChangesAsync();
+        return new(true, late
+            ? "Devolución registrada fuera de horario. El estudiante quedó Penalizado."
+            : "Devolución registrada a tiempo. El equipo vuelve a estar disponible.");
+    });
+
     private Task<bool> StudentConflictAsync(string id, DateTime start, DateTime end, int excluding = 0) =>
         db.Reservas.AnyAsync(r => r.Id != excluding && r.EstudianteId == id &&
             (r.Estado == EstadoReserva.Pendiente || r.Estado == EstadoReserva.Aprobada) && start < r.Fin && end > r.Inicio);

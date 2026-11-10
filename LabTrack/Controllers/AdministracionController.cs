@@ -11,7 +11,7 @@ namespace LabTrack.Controllers;
 
 [Authorize(Roles = Roles.Encargado)]
 [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-public class AdministracionController(LabTrackDbContext db, ReservaService service, UserManager<Usuario> users) : Controller
+public class AdministracionController(LabTrackDbContext db, ReservaService service, UserManager<Usuario> users, LabClock clock) : Controller
 {
     public async Task<IActionResult> Index(EstadoReserva? estado = EstadoReserva.Pendiente, int pagina = 1)
     {
@@ -52,6 +52,27 @@ public class AdministracionController(LabTrackDbContext db, ReservaService servi
         }
         Notify(result);
         return RedirectToAction(nameof(Index));
+    }
+
+    public async Task<IActionResult> Devoluciones(string? buscar, int pagina = 1)
+    {
+        buscar = buscar?.Trim();
+        if (buscar?.Length > 100) return BadRequest();
+        var now = clock.Now;
+        var query = db.Reservas.AsNoTracking().Where(r => r.Estado == EstadoReserva.Aprobada && r.Inicio <= now);
+        if (!string.IsNullOrWhiteSpace(buscar))
+            query = query.Where(r => r.Estudiante.NombreCompleto.Contains(buscar) ||
+                r.Estudiante.CodigoEstudiante!.Contains(buscar) || r.Equipo.CodigoInventario.Contains(buscar) || r.Equipo.Nombre.Contains(buscar));
+        var model = await ListAsync(query, pagina);
+        model.Buscar = buscar;
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Devolver(int id)
+    {
+        Notify(await service.DevolverAsync(id));
+        return RedirectToAction(nameof(Devoluciones));
     }
 
     private Task<Reserva?> PendingAsync(int id) => db.Reservas.AsNoTracking().Include(r => r.Estudiante)

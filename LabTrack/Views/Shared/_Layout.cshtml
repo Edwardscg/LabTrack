@@ -1,4 +1,4 @@
-@{ var current = ViewContext.RouteData.Values["controller"]?.ToString(); }
+@{ var current = ViewContext.RouteData.Values["controller"]?.ToString(); var action = ViewContext.RouteData.Values["action"]?.ToString(); }
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -31,8 +31,8 @@
             }
             @if (User.IsInRole(Roles.Encargado))
             {
-                <a asp-controller="Administracion" asp-action="Index">Solicitudes</a>
-                <a asp-controller="Administracion" asp-action="Devoluciones">Devoluciones</a>
+                <a class="@(current == "Administracion" && action != "Devoluciones" ? "active" : "")" asp-controller="Administracion" asp-action="Index">Solicitudes</a>
+                <a class="@(current == "Administracion" && action == "Devoluciones" ? "active" : "")" asp-controller="Administracion" asp-action="Devoluciones">Devoluciones</a>
             }
         </nav>
     }
