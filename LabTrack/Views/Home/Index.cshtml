@@ -1,8 +1,30 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@model DashboardViewModel
+@{ ViewData["Title"] = "Mi panel"; var admin = User.IsInRole(Roles.Encargado); }
+<div class="page-heading">
+    <div><span class="eyebrow">@(admin ? "CONTROL DEL LABORATORIO" : "MI ESPACIO DE TRABAJO")</span>
+        <h1>Hola, @Model.Nombre</h1>
+        <p>@(admin ? "Organiza las solicitudes y mantén al día las devoluciones." : "Todo listo para tu próxima práctica. Consulta tus equipos y horarios.")</p>
+    </div>
+    <a class="btn btn-primary" asp-controller="Equipos" asp-action="Index">Explorar catálogo <span aria-hidden="true">→</span></a>
 </div>
+@if (Model.Penalizado) { <div class="alert alert-warning" role="status"><strong>Estado: Penalizado.</strong> Se registró una devolución fuera del horario autorizado. Consulta con el encargado para mayor información.</div> }
+<section class="stats-grid" aria-label="Resumen del laboratorio">
+    <div class="surface stat"><span>Solicitudes pendientes</span><strong>@Model.Pendientes.ToString("D2")</strong><small>Por revisar</small></div>
+    <div class="surface stat"><span>Reservas aprobadas</span><strong>@Model.Aprobadas.ToString("D2")</strong><small>Programadas o por devolver</small></div>
+    <div class="surface stat"><span>Devoluciones registradas</span><strong>@Model.Devueltas.ToString("D2")</strong><small>Préstamos finalizados</small></div>
+    <div class="surface stat"><span>Equipos del laboratorio</span><strong>@Model.Equipos.ToString("D2")</strong><small>Tres áreas de aprendizaje</small></div>
+</section>
+<div class="section-heading"><h2>¿Qué necesitas hacer?</h2><span>Accesos directos</span></div>
+<div class="action-grid">
+    @if (admin)
+    {
+        <a class="surface action-card" asp-controller="Administracion" asp-action="Index"><span class="card-label">SOLICITUDES</span><h3>Gestionar reservas <span>↗</span></h3><p>Revisa horarios, aprueba solicitudes o registra un motivo de rechazo.</p></a>
+        <a class="surface action-card" asp-controller="Administracion" asp-action="Devoluciones"><span class="card-label">PRÉSTAMOS</span><h3>Registrar devoluciones <span>↗</span></h3><p>Consulta los equipos en uso y registra su retorno al laboratorio.</p></a>
+    }
+    else
+    {
+        <a class="surface action-card" asp-controller="Equipos" asp-action="Index"><span class="card-label">CATÁLOGO</span><h3>Encontrar un equipo <span>↗</span></h3><p>Explora Cómputo, Electrónica y Redes. Elige el equipo para tu práctica.</p></a>
+        <a class="surface action-card" asp-controller="Reservas" asp-action="Index"><span class="card-label">SEGUIMIENTO</span><h3>Consultar mis reservas <span>↗</span></h3><p>Revisa el estado de tus solicitudes y las observaciones del encargado.</p></a>
+    }
+</div>
+<aside class="tip-panel"><strong>Un laboratorio que compartimos</strong><p>Respeta el horario de tu reserva y devuelve los equipos a tiempo para que todos puedan utilizarlos.</p></aside>

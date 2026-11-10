@@ -1,48 +1,47 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@{ var current = ViewContext.RouteData.Values["controller"]?.ToString(); }
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - LabTrack</title>
-    <script type="importmap"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · LabTrack</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/LabTrack.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">LabTrack</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+    <a class="skip-link" href="#contenido">Ir al contenido</a>
+    <header class="topbar">
+        <a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">LT</span> LabTrack<span class="brand-caption">Gestión de laboratorios</span></a>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <div class="account-nav"><span>@User.Identity.Name <small>@(User.IsInRole(Roles.Encargado) ? "Encargado" : "Estudiante")</small></span>
+                <form asp-controller="Account" asp-action="Logout" method="post"><button class="btn btn-outline-light btn-sm" type="submit">Cerrar sesión</button></form>
             </div>
-        </nav>
+        }
+        else { <span class="institution">Universidad Privada del Norte</span> }
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - LabTrack - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <nav class="main-nav" aria-label="Navegación principal">
+            <a class="@(current == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">Mi panel</a>
+            <a class="@(current == "Equipos" ? "active" : "")" asp-controller="Equipos" asp-action="Index">Catálogo de equipos</a>
+            @if (User.IsInRole(Roles.Estudiante))
+            {
+                <a class="@(current == "Reservas" ? "active" : "")" asp-controller="Reservas" asp-action="Index">Mis reservas</a>
+            }
+            @if (User.IsInRole(Roles.Encargado))
+            {
+                <a asp-controller="Administracion" asp-action="Index">Solicitudes</a>
+                <a asp-controller="Administracion" asp-action="Devoluciones">Devoluciones</a>
+            }
+        </nav>
+    }
+    <main id="contenido" class="page-container">
+        @if (TempData["Success"] is string success) { <div class="alert alert-success" role="status">@success</div> }
+        @if (TempData["Error"] is string error) { <div class="alert alert-danger" role="alert">@error</div> }
+        @RenderBody()
+    </main>
+    <footer class="page-footer"><span>LabTrack · Laboratorios UPN</span><span>Horarios de Lima, Perú (UTC−05:00)</span></footer>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

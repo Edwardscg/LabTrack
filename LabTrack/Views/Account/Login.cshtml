@@ -1,0 +1,28 @@
+@model LoginViewModel
+@{ ViewData["Title"] = "Iniciar sesión"; }
+<div class="login-grid">
+    <section class="login-intro">
+        <span class="eyebrow">ESPACIOS PARA APRENDER</span>
+        <h1>Tu próxima práctica<br />empieza aquí<span class="accent">.</span></h1>
+        <p>Encuentra el equipo que necesitas, solicita tu horario y sigue tus préstamos desde un solo lugar.</p>
+        <div class="intro-steps"><div><b>01</b><span>Explora el catálogo</span></div><div><b>02</b><span>Reserva tu equipo</span></div><div><b>03</b><span>Aprende y devuelve a tiempo</span></div></div>
+        <span class="intro-note">Cómputo · Electrónica · Redes</span>
+    </section>
+    <section class="surface login-card" aria-labelledby="login-title">
+        <span class="eyebrow">BIENVENIDO A LABTRACK</span>
+        <h2 id="login-title">Inicia sesión</h2>
+        <p class="text-muted">Ingresa con tu cuenta del laboratorio.</p>
+        <form asp-action="Login" method="post">
+            <input asp-for="ReturnUrl" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+            <div class="mb-4"><label asp-for="Identificador" class="form-label"></label>
+                <input asp-for="Identificador" class="form-control" autocomplete="username" placeholder="C00123456" maxlength="64" required aria-describedby="identifier-help" />
+                <span asp-validation-for="Identificador" class="field-validation"></span>
+                <div class="form-text" id="identifier-help">Estudiantes: C00 seguido de seis dígitos. Encargados: identificador administrativo.</div>
+            </div>
+            <div class="mb-4"><label asp-for="Password" class="form-label"></label><input asp-for="Password" class="form-control" autocomplete="current-password" required /><span asp-validation-for="Password" class="field-validation"></span></div>
+            <button class="btn btn-primary w-100" type="submit">Ingresar a LabTrack <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="security-note">Por seguridad, tres intentos fallidos consecutivos bloquean temporalmente la cuenta.</p>
+    </section>
+</div>

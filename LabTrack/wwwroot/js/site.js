@@ -1,4 +1,17 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+document.querySelectorAll('form').forEach(form => {
+    form.addEventListener('submit', () => {
+        if (!form.checkValidity()) return;
+        form.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.disabled = true;
+            button.setAttribute('aria-busy', 'true');
+        });
+    });
+});
 
-// Write your JavaScript code.
+const identifier = document.querySelector('#Identificador');
+identifier?.addEventListener('input', () => {
+    const value = identifier.value.trim();
+    const resemblesStudentCode = /^c\d/i.test(value);
+    identifier.setCustomValidity(resemblesStudentCode && !/^C00[0-9]{6}$/.test(value)
+        ? 'El código debe tener el formato C00 seguido de seis dígitos.' : '');
+});
