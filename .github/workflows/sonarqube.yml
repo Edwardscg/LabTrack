@@ -1,0 +1,58 @@
+name: Análisis SonarQube
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sonarqube-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analysis:
+    if: ${{ vars.SONAR_ENABLED == 'true' }}
+    runs-on: ${{ fromJSON(vars.SONAR_RUNNER_LABELS || '["self-hosted", "Windows", "X64"]') }}
+    timeout-minutes: 30
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validar configuración
+        run: |
+          foreach ($key in 'SONAR_TOKEN', 'SONAR_HOST_URL', 'SONAR_PROJECT_KEY') {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($key))) {
+              throw "Falta configurar $key en GitHub."
+            }
+          }
+      - name: Preparar scanner y dependencias
+        run: |
+          $scannerPath = Join-Path $env:RUNNER_TEMP "labtrack-sonar-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+          dotnet tool install dotnet-sonarscanner --tool-path $scannerPath --version 12.1.0
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $scannerPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          dotnet restore LabTrack.sln
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Iniciar análisis
+        run: |
+          dotnet-sonarscanner begin /k:"$env:SONAR_PROJECT_KEY" /d:sonar.host.url="$env:SONAR_HOST_URL" /d:sonar.token="$env:SONAR_TOKEN" /d:sonar.exclusions="**/wwwroot/lib/**" /d:sonar.scanner.scanAll=false
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Compilar solución
+        run: dotnet build LabTrack.sln --configuration Release --no-restore --no-incremental
+      - name: Finalizar análisis
+        run: |
+          dotnet-sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
