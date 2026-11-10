@@ -1,0 +1,26 @@
+@model CrearReservaViewModel
+@inject LabTrack.Services.LabClock Clock
+@{ ViewData["Title"] = "Solicitar reserva"; }
+<a class="back-link" asp-controller="Equipos" asp-action="Index">← Volver al catálogo</a>
+<div class="page-heading"><div><span class="eyebrow">PLANIFICA TU PRÁCTICA</span><h1>Solicitar una reserva</h1><p>Selecciona el día y el horario en que utilizarás el equipo.</p></div></div>
+<div class="form-grid">
+    <section class="surface form-panel">
+        <h2>Horario de uso</h2><p class="small">Tu solicitud quedará pendiente de aprobación.</p>
+        <form asp-action="Crear" method="post" id="reservation-form">
+            <input asp-for="EquipoId" type="hidden" />
+            <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+            <div class="mb-4"><label asp-for="Fecha" class="form-label"></label><input asp-for="Fecha" type="date" class="form-control" min="@Clock.Now.ToString("yyyy-MM-dd")" required /><span asp-validation-for="Fecha" class="field-validation"></span></div>
+            <div class="row mb-4"><div class="col-sm-6 mb-3"><label asp-for="HoraInicio" class="form-label"></label><input asp-for="HoraInicio" type="time" class="form-control" required /><span asp-validation-for="HoraInicio" class="field-validation"></span></div><div class="col-sm-6"><label asp-for="HoraFin" class="form-label"></label><input asp-for="HoraFin" type="time" class="form-control" required /><span asp-validation-for="HoraFin" class="field-validation"></span></div></div>
+            <p class="form-text">Horario de Lima. El inicio y el fin deben corresponder al mismo día.</p>
+            <div class="form-actions"><button type="submit" class="btn btn-primary">Enviar solicitud</button><a asp-controller="Equipos" asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div>
+        </form>
+    </section>
+    <aside>
+        <section class="surface detail-panel"><span class="eyebrow">EQUIPO SELECCIONADO</span><h2>@Model.Equipo.Nombre</h2><p>@Model.Equipo.Descripcion</p><dl><dt>Inventario</dt><dd>@Model.Equipo.CodigoInventario</dd><dt>Categoría</dt><dd>@Model.Equipo.Categoria.Nombre</dd></dl></section>
+        <section class="surface detail-panel mt-3"><h2>Próximos horarios ocupados</h2>
+        @if (Model.ProximasReservas.Count == 0) { <p class="small mb-0">No hay reservas aprobadas próximas.</p> }
+        else { <ul class="schedule-list">@foreach (var reservation in Model.ProximasReservas) { <li><strong>@reservation.Inicio.ToString("dd MMM yyyy")</strong><span>@reservation.Inicio.ToString("HH:mm") – @reservation.Fin.ToString("HH:mm")</span></li> }</ul><p class="form-text">Hasta diez reservas próximas. El horario se verifica nuevamente al enviar.</p> }
+        </section>
+        <div class="tip-panel"><strong>Un equipo por horario</strong><p>No puedes mantener solicitudes pendientes o aprobadas que se superpongan. Los horarios contiguos sí están permitidos.</p></div>
+    </aside>
+</div>

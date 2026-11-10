@@ -32,6 +32,7 @@ builder.Services.AddAuthorization(options => options.FallbackPolicy =
     new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddSingleton<LabClock>();
+builder.Services.AddScoped<ReservaService>();
 
 var app = builder.Build();
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo("es-PE");

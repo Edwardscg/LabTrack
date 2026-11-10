@@ -1,0 +1,5 @@
+@model ListadoReservasViewModel
+<nav class="pager" aria-label="Paginación de reservas"><span>@Model.Total registros · Página @Model.Pagina de @Model.TotalPaginas</span>
+@if (Model.Pagina > 1) { <a asp-route-pagina="@(Model.Pagina - 1)" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar">Anterior</a> }
+@if (Model.Pagina < Model.TotalPaginas) { <a asp-route-pagina="@(Model.Pagina + 1)" asp-route-estado="@Model.Estado" asp-route-buscar="@Model.Buscar">Siguiente</a> }
+</nav>

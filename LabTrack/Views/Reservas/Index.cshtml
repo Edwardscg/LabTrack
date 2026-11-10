@@ -1,0 +1,21 @@
+@model ListadoReservasViewModel
+@{ ViewData["Title"] = "Mis reservas"; }
+<div class="page-heading"><div><span class="eyebrow">SEGUIMIENTO DE SOLICITUDES</span><h1>Mis reservas</h1><p>Consulta tus horarios, devoluciones y respuestas del encargado.</p></div><a asp-controller="Equipos" asp-action="Index" class="btn btn-primary">Nueva reserva <span aria-hidden="true">+</span></a></div>
+@if (Model.Reservas.Count == 0)
+{
+    <section class="surface empty-state"><h2>Aún no tienes reservas</h2><p>Explora el catálogo y solicita tu primer equipo.</p><a asp-controller="Equipos" asp-action="Index" class="btn btn-primary">Explorar catálogo</a></section>
+}
+else
+{
+    <div class="surface table-responsive"><table class="table data-table"><caption class="visually-hidden">Historial de reservas del estudiante</caption><thead><tr><th>Equipo</th><th>Fecha y horario</th><th>Estado</th><th>Observaciones</th></tr></thead><tbody>
+    @foreach (var r in Model.Reservas)
+    {
+        <tr><td><strong>@r.Equipo.Nombre</strong><small>@r.Equipo.CodigoInventario · Solicitud #@r.Id</small></td><td>@r.Inicio.ToString("dd MMM yyyy")<small>@r.Inicio.ToString("HH:mm") – @r.Fin.ToString("HH:mm")</small></td><td><partial name="_EstadoReserva" model="r.Estado" /></td><td class="notes-cell">
+        @if (r.Estado == EstadoReserva.Rechazada) { <span>@r.MotivoRechazo</span> }
+        else if (r.FechaDevolucion.HasValue) { <span>Devuelto: @r.FechaDevolucion.Value.ToString("dd/MM/yyyy HH:mm")</span>@if (r.FechaDevolucion > r.Fin) { <small class="text-danger">Devolución tardía · Penalización registrada</small> } }
+        else { <span class="text-muted">@(r.Estado == EstadoReserva.Pendiente ? "En revisión por el encargado" : "Devuelve el equipo al finalizar tu horario")</span> }
+        </td></tr>
+    }
+    </tbody></table></div>
+    <partial name="_PaginacionReservas" model="Model" />
+}

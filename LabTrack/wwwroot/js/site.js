@@ -15,3 +15,13 @@ identifier?.addEventListener('input', () => {
     identifier.setCustomValidity(resemblesStudentCode && !/^C00[0-9]{6}$/.test(value)
         ? 'El código debe tener el formato C00 seguido de seis dígitos.' : '');
 });
+
+const reservationForm = document.querySelector('#reservation-form');
+if (reservationForm) {
+    const start = reservationForm.querySelector('#HoraInicio');
+    const end = reservationForm.querySelector('#HoraFin');
+    const validateTime = () => end.setCustomValidity(start.value && end.value && end.value <= start.value
+        ? 'La hora de fin debe ser posterior a la hora de inicio.' : '');
+    start.addEventListener('input', validateTime);
+    end.addEventListener('input', validateTime);
+}
