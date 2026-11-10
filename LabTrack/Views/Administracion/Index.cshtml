@@ -1,0 +1,28 @@
+@model ListadoReservasViewModel
+@{ ViewData["Title"] = "Gestión de solicitudes"; }
+<div class="page-heading"><div><span class="eyebrow">ADMINISTRACIÓN DEL LABORATORIO</span><h1>Gestión de solicitudes</h1><p>Revisa las solicitudes y confirma la asignación de equipos.</p></div><span class="count-label">@Model.Total solicitudes</span></div>
+<form method="get" class="filter-form"><label for="estado" class="form-label">Estado</label><select name="estado" id="estado" class="form-select"><option value="" selected="@(!Model.Estado.HasValue)">Todos los estados</option>
+@foreach (var state in Enum.GetValues<EstadoReserva>()) { <option value="@state" selected="@(Model.Estado == state)">@state</option> }
+</select><button type="submit" class="btn btn-outline-secondary">Filtrar</button></form>
+@if (Model.Reservas.Count == 0)
+{
+    <section class="surface empty-state"><h2>No hay solicitudes para este filtro</h2><p>Las nuevas solicitudes de los estudiantes aparecerán aquí.</p></section>
+}
+else
+{
+    <div class="surface table-responsive"><table class="table data-table"><caption class="visually-hidden">Solicitudes de préstamo</caption><thead><tr><th>Estudiante</th><th>Equipo</th><th>Fecha y horario</th><th>Estado</th><th>Acciones / detalle</th></tr></thead><tbody>
+    @foreach (var r in Model.Reservas)
+    {
+        <tr><td><strong>@r.Estudiante.NombreCompleto</strong><small>@r.Estudiante.CodigoEstudiante</small>@if (r.Estudiante.Penalizado) { <small class="text-danger">Penalizado</small> }</td><td>@r.Equipo.Nombre<small>@r.Equipo.CodigoInventario · #@r.Id</small></td><td>@r.Inicio.ToString("dd MMM yyyy")<small>@r.Inicio.ToString("HH:mm") – @r.Fin.ToString("HH:mm")</small></td><td><partial name="_EstadoReserva" model="r.Estado" /></td><td>
+        @if (r.Estado == EstadoReserva.Pendiente)
+        {
+            <div class="row-actions"><form method="post" asp-action="Aprobar" asp-route-id="@r.Id"><button type="submit" class="btn btn-primary btn-sm">Aprobar</button></form><a asp-action="Rechazar" asp-route-id="@r.Id" class="btn btn-outline-secondary btn-sm">Rechazar</a></div>
+        }
+        else if (r.Estado == EstadoReserva.Rechazada) { <span class="rejection-note">@r.MotivoRechazo</span> }
+        else if (r.Estado == EstadoReserva.Devuelta) { <span>@r.FechaDevolucion?.ToString("dd/MM/yyyy HH:mm")</span> }
+        else { <a asp-action="Devoluciones" asp-route-buscar="@r.Equipo.CodigoInventario">Consultar préstamo</a> }
+        </td></tr>
+    }
+    </tbody></table></div>
+    <partial name="_PaginacionReservas" model="Model" />
+}

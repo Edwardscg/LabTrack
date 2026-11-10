@@ -1,0 +1,12 @@
+@model RechazarViewModel
+@{ ViewData["Title"] = "Rechazar solicitud"; }
+<a asp-action="Index" class="back-link">← Volver a solicitudes</a>
+<div class="page-heading"><div><span class="eyebrow">SOLICITUD #@Model.Id</span><h1>Rechazar solicitud</h1><p>El estudiante podrá consultar la justificación en su historial.</p></div></div>
+<section class="surface form-panel narrow-panel">
+    <h2>@Model.Reserva.Equipo.Nombre</h2><p>@Model.Reserva.Estudiante.NombreCompleto · @Model.Reserva.Estudiante.CodigoEstudiante<br />@Model.Reserva.Inicio.ToString("dd/MM/yyyy HH:mm") – @Model.Reserva.Fin.ToString("HH:mm")</p>
+    <form asp-action="Rechazar" method="post"><input asp-for="Id" type="hidden" />
+        <div asp-validation-summary="ModelOnly" class="validation-summary" role="alert"></div>
+        <label asp-for="Motivo" class="form-label"></label><textarea asp-for="Motivo" class="form-control" rows="4" required maxlength="500" placeholder="Explica por qué no se puede atender esta solicitud"></textarea><span asp-validation-for="Motivo" class="field-validation"></span>
+        <div class="form-actions"><button type="submit" class="btn btn-primary">Confirmar rechazo</button><a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a></div>
+    </form>
+</section>

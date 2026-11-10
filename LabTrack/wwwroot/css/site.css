@@ -153,3 +153,9 @@ p { color: var(--color-muted); }
 .data-table tr:last-child td { border-bottom: none; }
 .notes-cell { min-width: 210px; max-width: 360px; overflow-wrap: anywhere; }
 @media(max-width: 800px) { .form-grid { grid-template-columns: 1fr; } .form-panel, .detail-panel { padding: 22px; } .data-table td { padding: 16px; min-width: 145px; } }
+.filter-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+.filter-form .form-label { margin: 0; }
+.filter-form .form-control, .filter-form .form-select { max-width: 330px; }
+.row-actions { display: flex; gap: 8px; }
+.rejection-note { display: block; min-width: 180px; max-width: 300px; overflow-wrap: anywhere; }
+.narrow-panel { max-width: 720px; }

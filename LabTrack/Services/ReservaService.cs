@@ -32,6 +32,42 @@ public class ReservaService(LabTrackDbContext db, LabClock clock)
             return new(true, "Solicitud enviada. El encargado revisará tu reserva.");
         });
 
+    public Task<ResultadoReserva> AprobarAsync(int id, string managerId) => MutateAsync(async () =>
+    {
+        var reservation = await db.Reservas.Include(r => r.Estudiante).SingleOrDefaultAsync(r => r.Id == id);
+        if (reservation is null || reservation.Estado != EstadoReserva.Pendiente)
+            return new(false, "La solicitud ya fue atendida o no existe.");
+        if (reservation.Inicio < clock.Now)
+            return new(false, "El horario de inicio ya pasó. Rechaza la solicitud para que el estudiante elija otro horario.");
+        if (!reservation.Estudiante.Activo)
+            return new(false, "La cuenta del estudiante no está habilitada.");
+        if (await EquipmentConflictAsync(reservation.EquipoId, reservation.Inicio, reservation.Fin, id))
+            return new(false, "No se puede aprobar: el equipo ya tiene una reserva aprobada en ese horario.");
+        if (await StudentConflictAsync(reservation.EstudianteId, reservation.Inicio, reservation.Fin, id))
+            return new(false, "No se puede aprobar: el estudiante tiene otra solicitud en ese horario.");
+        reservation.Estado = EstadoReserva.Aprobada;
+        reservation.EncargadoId = managerId;
+        reservation.FechaDecision = clock.Now;
+        await db.SaveChangesAsync();
+        return new(true, "Reserva aprobada. El equipo queda asignado para el horario solicitado.");
+    });
+
+    public Task<ResultadoReserva> RechazarAsync(int id, string managerId, string? reason) => MutateAsync(async () =>
+    {
+        reason = reason?.Trim();
+        if (string.IsNullOrWhiteSpace(reason) || reason.Length > 500)
+            return new(false, "Escribe un motivo de rechazo de entre 1 y 500 caracteres.");
+        var reservation = await db.Reservas.SingleOrDefaultAsync(r => r.Id == id);
+        if (reservation is null || reservation.Estado != EstadoReserva.Pendiente)
+            return new(false, "La solicitud ya fue atendida o no existe.");
+        reservation.Estado = EstadoReserva.Rechazada;
+        reservation.MotivoRechazo = reason;
+        reservation.EncargadoId = managerId;
+        reservation.FechaDecision = clock.Now;
+        await db.SaveChangesAsync();
+        return new(true, "Solicitud rechazada. El estudiante podrá consultar el motivo.");
+    });
+
     private Task<bool> StudentConflictAsync(string id, DateTime start, DateTime end, int excluding = 0) =>
         db.Reservas.AnyAsync(r => r.Id != excluding && r.EstudianteId == id &&
             (r.Estado == EstadoReserva.Pendiente || r.Estado == EstadoReserva.Aprobada) && start < r.Fin && end > r.Inicio);
