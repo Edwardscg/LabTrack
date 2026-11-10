@@ -1,0 +1,37 @@
+@model CatalogoViewModel
+@{ ViewData["Title"] = "Catálogo de equipos"; }
+<div class="page-heading"><div><span class="eyebrow">RECURSOS DEL LABORATORIO</span><h1>Encuentra tu próximo equipo</h1><p>Elige una categoría y consulta los recursos para tu práctica.</p></div><span class="count-label">@Model.Total equipos</span></div>
+<nav class="filter-tabs" aria-label="Filtrar por categoría">
+    <a class="@(!Model.CategoriaId.HasValue ? "selected" : "")" asp-action="Index">Todos los equipos</a>
+    @foreach (var category in Model.Categorias)
+    {
+        <a class="@(Model.CategoriaId == category.Id ? "selected" : "")" asp-action="Index" asp-route-categoriaId="@category.Id">@category.Nombre</a>
+    }
+</nav>
+<p class="catalog-note">El estado indica el uso actual. La disponibilidad para una reserva se verifica según el horario solicitado.</p>
+@if (Model.Equipos.Count == 0)
+{
+    <section class="surface empty-state"><h2>No hay equipos disponibles en esta categoría</h2><p>Selecciona otra categoría para continuar explorando.</p><a asp-action="Index" class="btn btn-outline-secondary">Ver todos los equipos</a></section>
+}
+else
+{
+    <div class="equipment-grid">
+        @foreach (var equipment in Model.Equipos)
+        {
+            var icon = equipment.Categoria == "Cómputo" ? "computer" : equipment.Categoria == "Electrónica" ? "electronics" : "network";
+            <article class="surface equipment-card">
+                <div class="equipment-visual"><svg aria-hidden="true" width="110" height="82"><use href="/images/equipment.svg#@icon"></use></svg><span class="status-badge @(equipment.Prestado ? "prestado" : "disponible")">@(equipment.Prestado ? "Prestado" : "Disponible")</span></div>
+                <div class="equipment-body"><span class="card-label">@equipment.Categoria.ToUpperInvariant()</span><h2>@equipment.Nombre</h2><p>@equipment.Descripcion</p><div class="equipment-bottom"><span class="inventory-code">@equipment.Codigo</span>
+                @if (User.IsInRole(Roles.Estudiante)) { <a class="btn btn-sm btn-outline-secondary" asp-controller="Reservas" asp-action="Crear" asp-route-equipoId="@equipment.Id">Consultar horario <span aria-hidden="true">→</span></a> }
+                </div></div>
+            </article>
+        }
+    </div>
+}
+@if (Model.TotalPaginas > 1)
+{
+    <nav class="pager" aria-label="Paginación"><span>Página @Model.Pagina de @Model.TotalPaginas</span>
+    @if (Model.Pagina > 1) { <a asp-route-categoriaId="@Model.CategoriaId" asp-route-pagina="@(Model.Pagina - 1)">Anterior</a> }
+    @if (Model.Pagina < Model.TotalPaginas) { <a asp-route-categoriaId="@Model.CategoriaId" asp-route-pagina="@(Model.Pagina + 1)">Siguiente</a> }
+    </nav>
+}

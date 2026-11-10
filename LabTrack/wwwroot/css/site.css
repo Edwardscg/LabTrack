@@ -112,3 +112,26 @@ p { color: var(--color-muted); }
     .page-footer { flex-direction: column; }
     .section-heading span { display: none; }
 }
+.filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-tabs a { text-decoration: none; font-size: .85rem; padding: 10px 18px; border: 1px solid var(--color-border); border-radius: 7px; background: white; }
+.filter-tabs a.selected { background: var(--color-dark); color: white; border-color: var(--color-dark); }
+.count-label { background: #eee; padding: 7px 14px; font-size: .8rem; border-radius: 20px; white-space: nowrap; }
+.catalog-note { font-size: .8rem; margin: 20px 0; }
+.equipment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.equipment-card { overflow: hidden; }
+.equipment-visual { height: 165px; background: #eeefed; display: grid; place-items: center; position: relative; }
+.equipment-visual .status-badge { position: absolute; top: 14px; right: 14px; }
+.status-badge { font-size: .7rem; font-weight: 650; border-radius: 20px; padding: 5px 10px; white-space: nowrap; display: inline-block; }
+.disponible, .devuelta { background: #e8f4eb; color: #24683d; }
+.prestado, .aprobada { background: #e7effb; color: #285b9a; }
+.pendiente { background: #fff4cc; color: #7b620c; }
+.rechazada { background: #fbe9e6; color: #a13929; }
+.equipment-body { padding: 24px; }
+.equipment-body .card-label { color: #777; }
+.equipment-body h2 { font-size: 1.2rem; margin: 12px 0; }
+.equipment-body > p { font-size: .8rem; min-height: 48px; }
+.equipment-bottom { border-top: 1px solid var(--color-border); padding-top: 18px; display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.inventory-code { font-family: Consolas, monospace; font-size: .75rem; color: #777; }
+.pager { display: flex; justify-content: flex-end; gap: 20px; margin: 28px 0; font-size: .85rem; }
+@media(max-width: 1000px) { .equipment-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width: 600px) { .equipment-grid { grid-template-columns: 1fr; } .count-label { display: inline-block; margin-top: 16px; } }
