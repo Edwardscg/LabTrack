@@ -28,8 +28,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromHours(2);
     options.SlidingExpiration = true;
 });
-builder.Services.AddAuthorization(options => options.FallbackPolicy =
-    new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 builder.Services.AddControllersWithViews(options => options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 builder.Services.AddSingleton<LabClock>();
 builder.Services.AddScoped<ReservaService>();
@@ -58,4 +58,4 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapStaticAssets().AllowAnonymous();
 app.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
-app.Run();
+await app.RunAsync();
