@@ -45,6 +45,11 @@ if (args.Contains("--initialize"))
 {
     using var scope = app.Services.CreateScope();
     await DatabaseInitializer.InitializeAsync(scope.ServiceProvider, app.Configuration);
+    if (app.Configuration["RuntimeDbPassword"] is { Length: > 0 } runtimePassword)
+    {
+        var db = scope.ServiceProvider.GetRequiredService<LabTrackDbContext>();
+        await DatabaseInitializer.ConfigureRuntimeLoginAsync(db, runtimePassword);
+    }
     app.Logger.LogInformation("Base de datos y datos iniciales preparados.");
     return;
 }

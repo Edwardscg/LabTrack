@@ -83,6 +83,20 @@ try {
 
 Para ingresar, escribe el identificador y la contraseña elegida en el formulario de LabTrack. Identity guarda el hash en SQL Server. Las variables de entorno solo se necesitan durante la creación inicial de las cuentas.
 
+## Ejecución con Docker Desktop
+
+Abre Docker Desktop con contenedores Linux. Desde la carpeta que contiene `compose.yaml`, ejecuta:
+
+```powershell
+docker compose up -d --build
+```
+
+Abre http://localhost:5133. En la instalación actual ya se copiaron los usuarios y los préstamos de SQL Server de Windows. Desde entonces, los cambios que realices en Docker se guardan en su propia base. Para detener el sistema usa `docker compose stop` y para volver a levantarlo usa `docker compose up -d`. Los volúmenes conservan los datos entre ejecuciones. El parámetro `down -v` elimina esos volúmenes y los datos.
+
+**Primera instalación en otra máquina.** Crea un archivo local `.env` junto a `compose.yaml`. Define `SQL_ADMIN_PASSWORD` y `SQL_APP_PASSWORD` con dos claves SQL distintas, de al menos 16 caracteres, que combinen mayúsculas, minúsculas y números. Usa caracteres alfanuméricos para evitar separadores de cadenas de conexión. Para una base vacía, define también `SEED_ENCARGADO_PASSWORD`, `SEED_ESTUDIANTE1_PASSWORD` y `SEED_ESTUDIANTE2_PASSWORD` con las claves iniciales elegidas para las tres cuentas. Git y el contexto de compilación excluyen este archivo.
+
+SQL Server Developer se ejecuta en una red interna. El servicio de inicialización aplica las migraciones y configura el usuario SQL de lectura y escritura de la aplicación. El servicio web solo publica su puerto en localhost. Puedes cambiarlo con `LABTRACK_PORT` en `.env`. Para revisar el estado usa `docker compose ps -a`; el contenedor de inicialización termina con código 0 al completar su trabajo.
+
 ## Ejecución local
 
 ```powershell

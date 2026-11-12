@@ -53,6 +53,21 @@ public static class DatabaseInitializer
         if (!await users.IsInRoleAsync(user, role)) Ensure(await users.AddToRoleAsync(user, role));
     }
 
+    public static async Task ConfigureRuntimeLoginAsync(LabTrackDbContext db, string password)
+    {
+        if (password.Length > 128) throw new ArgumentException("La clave SQL supera los 128 caracteres.");
+        await db.Database.ExecuteSqlInterpolatedAsync($"""
+            DECLARE @sql nvarchar(max) = CASE WHEN SUSER_ID('labtrack_web') IS NULL
+                THEN N'CREATE LOGIN [labtrack_web]' ELSE N'ALTER LOGIN [labtrack_web]' END
+                + N' WITH PASSWORD = ' + QUOTENAME({password}, '''');
+            EXEC sys.sp_executesql @sql;
+            IF USER_ID('labtrack_web') IS NULL CREATE USER [labtrack_web] FOR LOGIN [labtrack_web];
+            ELSE ALTER USER [labtrack_web] WITH LOGIN = [labtrack_web];
+            IF IS_ROLEMEMBER('db_datareader','labtrack_web') = 0 ALTER ROLE db_datareader ADD MEMBER [labtrack_web];
+            IF IS_ROLEMEMBER('db_datawriter','labtrack_web') = 0 ALTER ROLE db_datawriter ADD MEMBER [labtrack_web];
+            """);
+    }
+
     private static void Ensure(IdentityResult result)
     {
         if (!result.Succeeded) throw new InvalidOperationException(string.Join("; ", result.Errors.Select(e => e.Description)));
