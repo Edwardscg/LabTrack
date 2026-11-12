@@ -16,7 +16,11 @@ builder.Services.AddIdentity<Usuario, IdentityRole>(options =>
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(
         Math.Clamp(builder.Configuration.GetValue("Security:LockoutMinutes", 15), 1, 1440));
     options.Lockout.AllowedForNewUsers = true;
-    options.Password.RequiredLength = 10;
+    options.Password.RequiredLength = 8;
+    options.Password.RequireDigit = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
 }).AddEntityFrameworkStores<LabTrackDbContext>().AddDefaultTokenProviders();
 builder.Services.ConfigureApplicationCookie(options =>
 {

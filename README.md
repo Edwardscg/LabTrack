@@ -68,7 +68,7 @@ El comando `--initialize` aplica las migraciones y crea los registros que faltan
 
 Los códigos de estudiante tienen nueve caracteres y cumplen `^C00[0-9]{6}$`. El encargado utiliza un identificador independiente. No hay registro público de cuentas. La inicialización también crea las tres categorías y seis equipos, sin solicitudes ficticias.
 
-Define contraseñas distintas de al menos diez caracteres, con mayúscula, minúscula, número y símbolo. El siguiente comando las solicita de forma oculta y las transmite al proceso mediante variables de entorno, sin incluirlas en el código ni en el historial de comandos:
+Define contraseñas distintas de al menos ocho caracteres para las cuentas de demostración. El siguiente comando las solicita de forma oculta y las transmite al proceso mediante variables de entorno, sin incluirlas en el código ni en el historial de comandos:
 
 ```powershell
 $env:Seed__EncargadoPassword = [Net.NetworkCredential]::new('', (Read-Host 'Contraseña del encargado' -AsSecureString)).Password
@@ -81,15 +81,7 @@ try {
 }
 ```
 
-Si existe una copia local de las credenciales en `%LOCALAPPDATA%\LabTrack\initial-accounts.clixml`, puede consultarse únicamente con el mismo usuario de Windows y en el equipo que la cifró. Este archivo está fuera del repositorio y utiliza la protección DPAPI de PowerShell:
-
-```powershell
-Import-Clixml "$env:LOCALAPPDATA\LabTrack\initial-accounts.clixml" | ForEach-Object {
-    [pscustomobject]@{ Usuario = $_.UserName; Clave = $_.GetNetworkCredential().Password }
-}
-```
-
-Consulta ese resultado solo en tu terminal local. Conserva las credenciales en un lugar seguro y no las incluyas en Git.
+Para ingresar, escribe el identificador y la contraseña elegida en el formulario de LabTrack. Identity guarda el hash en SQL Server. Las variables de entorno solo se necesitan durante la creación inicial de las cuentas.
 
 ## Ejecución local
 
